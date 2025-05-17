@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id             Int       @id @default(autoincrement())
+  nombre         String    @db.VarChar(255)
+  apellido       String?   @db.VarChar(255) @map("apellido")
+  fechaNacimiento DateTime? @db.Date        @map("fecha_nacimiento")
+  dni            String?   @db.VarChar(20)
+  nacionalidad   String?   @db.VarChar(100)
+  direccion      String?   @db.VarChar(255)
+  numeroDireccion String?   @db.VarChar(10) @map("numero_direccion")
+  celular        String?   @db.VarChar(20)
+  codigoPostal   String?   @db.VarChar(10) @map("codigo_postal")
+  email          String    @unique @db.VarChar(255)
+  contrasenaHash String    @db.VarChar(255) @map("contrasena_hash")
+  estado         Boolean   @default(true)
+  fechaRegistro  DateTime  @default(now()) @map("fecha_registro") // Cambiado
+  usuariosDonaciones UsuarioDonacion[]
+}
+
+model CategoriaDonacion {
+  id                 Int       @id @default(autoincrement())
+  nombre             String    @unique @db.VarChar(100)
+  detallesDonaciones DetallesDonacion[]
+  @@map("categorias_donaciones")
+}
+
+model DetallesDonacion {
+  id                 Int       @id @default(autoincrement())
+  categoriaId        Int       @map("categoria_id") @db.Integer
+  categoriaDonacion  CategoriaDonacion @relation(fields: [categoriaId], references: [id], map: "detalles_donacion_categoria_id_fkey")
+  descripcion        String?   @db.Text
+  cantidad           Int?      @db.Integer
+  monto              Decimal?  @db.Decimal(10, 2)
+  talla              String?   @db.VarChar(50)
+  unidadMedida       String?   @db.VarChar(50) @map("unidad_medida")
+  fechaVencimiento   DateTime? @db.Date        @map("fecha_vencimiento")
+  fechaDonacion      DateTime  @default(now()) @map("fecha_donacion") // Cambiado
+  usuariosDonaciones UsuarioDonacion[]
+  @@map("detalles_donacion")
+}
+
+model UsuarioDonacion {
+  id                 Int            @id @default(autoincrement())
+  usuarioId          Int            @map("usuario_id") @db.Integer
+  usuario            Usuario        @relation(fields: [usuarioId], references: [id], map: "usuarios_donaciones_usuario_id_fkey")
+  detalleDonacionId  Int            @map("detalle_donacion_id") @db.Integer
+  detallesDonacion   DetallesDonacion @relation(fields: [detalleDonacionId], references: [id], map: "usuarios_donaciones_detalle_donacion_id_fkey")
+  fechaRegistro      DateTime       @default(now()) @map("fecha_registro") // Cambiado
+  @@unique([usuarioId, detalleDonacionId])
+  @@map("usuarios_donaciones")
+}
