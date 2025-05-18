@@ -8,21 +8,22 @@ datasource db {
 }
 
 model Usuario {
-  id             Int       @id @default(autoincrement())
-  nombre         String    @db.VarChar(255)
-  apellido       String?   @db.VarChar(255) @map("apellido")
-  fechaNacimiento DateTime? @db.Date        @map("fecha_nacimiento")
-  dni            String?   @db.VarChar(20)
-  nacionalidad   String?   @db.VarChar(100)
-  direccion      String?   @db.VarChar(255)
-  numeroDireccion String?   @db.VarChar(10) @map("numero_direccion")
-  celular        String?   @db.VarChar(20)
-  codigoPostal   String?   @db.VarChar(10) @map("codigo_postal")
-  email          String    @unique @db.VarChar(255)
-  contrasenaHash String    @db.VarChar(255) @map("contrasena_hash")
-  estado         Boolean   @default(true)
-  fechaRegistro  DateTime  @default(now()) @map("fecha_registro") // Cambiado
+  id                 Int                  @id @default(autoincrement())
+  nombre             String               @db.VarChar(255)
+  apellido           String?              @db.VarChar(255) @map("apellido")
+  fechaNacimiento    DateTime?            @db.Date        @map("fecha_nacimiento")
+  dni                String?              @db.VarChar(20)
+  nacionalidad       String?              @db.VarChar(100)
+  direccion          String?              @db.VarChar(255)
+  numeroDireccion    String?              @db.VarChar(10) @map("numero_direccion")
+  celular            String?              @db.VarChar(20)
+  codigoPostal       String?              @db.VarChar(10) @map("codigo_postal")
+  email              String               @unique @db.VarChar(255)
+  contrasenaHash     String               @db.VarChar(255) @map("contrasena_hash")
+  estado             Boolean              @default(true)
+  fechaRegistro      DateTime             @default(now()) @map("fecha_registro") // Cambiado
   usuariosDonaciones UsuarioDonacion[]
+  @@map("usuarios")
 }
 
 model CategoriaDonacion {
@@ -44,7 +45,7 @@ model DetallesDonacion {
   fechaVencimiento   DateTime? @db.Date        @map("fecha_vencimiento")
   fechaDonacion      DateTime  @default(now()) @map("fecha_donacion") // Cambiado
   usuariosDonaciones UsuarioDonacion[]
-  @@map("detalles_donacion")
+  @@map("detalles_donaciones")
 }
 
 model UsuarioDonacion {
