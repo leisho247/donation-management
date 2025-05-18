@@ -21,7 +21,7 @@ model Usuario {
   email              String               @unique @db.VarChar(255)
   contrasenaHash     String               @db.VarChar(255) @map("contrasena_hash")
   estado             Boolean              @default(true)
-  fechaRegistro      DateTime             @default(now()) @map("fecha_registro") // Cambiado
+  fechaRegistro      DateTime             @default(now()) @map("fecha_registro")
   usuariosDonaciones UsuarioDonacion[]
   @@map("usuarios")
 }
@@ -43,7 +43,7 @@ model DetallesDonacion {
   talla              String?   @db.VarChar(50)
   unidadMedida       String?   @db.VarChar(50) @map("unidad_medida")
   fechaVencimiento   DateTime? @db.Date        @map("fecha_vencimiento")
-  fechaDonacion      DateTime  @default(now()) @map("fecha_donacion") // Cambiado
+  fechaDonacion      DateTime  @default(now()) @map("fecha_donacion") 
   usuariosDonaciones UsuarioDonacion[]
   @@map("detalles_donaciones")
 }
@@ -54,7 +54,7 @@ model UsuarioDonacion {
   usuario            Usuario        @relation(fields: [usuarioId], references: [id], map: "usuarios_donaciones_usuario_id_fkey")
   detalleDonacionId  Int            @map("detalle_donacion_id") @db.Integer
   detallesDonacion   DetallesDonacion @relation(fields: [detalleDonacionId], references: [id], map: "usuarios_donaciones_detalle_donacion_id_fkey")
-  fechaRegistro      DateTime       @default(now()) @map("fecha_registro") // Cambiado
+  fechaRegistro      DateTime       @default(now()) @map("fecha_registro")
   @@unique([usuarioId, detalleDonacionId])
   @@map("usuarios_donaciones")
 }
