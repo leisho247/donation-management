@@ -8,53 +8,88 @@ datasource db {
 }
 
 model Usuario {
-  id                 Int                  @id @default(autoincrement())
-  nombre             String               @db.VarChar(255)
-  apellido           String?              @db.VarChar(255) @map("apellido")
-  fechaNacimiento    DateTime?            @db.Date        @map("fecha_nacimiento")
-  dni                String?              @db.VarChar(20)
-  nacionalidad       String?              @db.VarChar(100)
-  direccion          String?              @db.VarChar(255)
-  numeroDireccion    String?              @db.VarChar(10) @map("numero_direccion")
-  celular            String?              @db.VarChar(20)
-  codigoPostal       String?              @db.VarChar(10) @map("codigo_postal")
-  email              String               @unique @db.VarChar(255)
-  contrasenaHash     String               @db.VarChar(255) @map("contrasena_hash")
-  estado             Boolean              @default(true)
-  fechaRegistro      DateTime             @default(now()) @map("fecha_registro") // Cambiado
-  usuariosDonaciones UsuarioDonacion[]
+  id                      Int                       @id @default(autoincrement())
+  nombre                  String                    @db.VarChar(255)
+  apellido                String?                   @db.VarChar(255) @map("apellido")
+  fechaNacimiento         DateTime?                 @db.Date        @map("fecha_nacimiento")
+  dni                     String?                   @db.VarChar(20)
+  nacionalidad            String?                   @db.VarChar(100)
+  direccion               String?                   @db.VarChar(255)
+  numeroDireccion         String?                   @db.VarChar(10) @map("numero_direccion")
+  celular                 String?                   @db.VarChar(20)
+  codigoPostal            String?                   @db.VarChar(10) @map("codigo_postal")
+  email                   String                    @unique @db.VarChar(255)
+  contrasenaHash          String                    @db.VarChar(255) @map("contrasena_hash")
+  estado                  Boolean                   @default(true)
+  fechaRegistro           DateTime                  @default(now()) @map("fecha_registro")
+  usuariosDonaciones      UsuarioDonacion[]
+  visitasLugaresDonacion UsuariosLugaresDonacion[] 
   @@map("usuarios")
 }
 
 model CategoriaDonacion {
-  id                 Int       @id @default(autoincrement())
-  nombre             String    @unique @db.VarChar(100)
+  id                 Int                  @id @default(autoincrement())
+  nombre             String               @unique @db.VarChar(100)
   detallesDonaciones DetallesDonacion[]
-  @@map("categorias_donaciones")
+  @@map("cat_don")
 }
 
 model DetallesDonacion {
-  id                 Int       @id @default(autoincrement())
-  categoriaId        Int       @map("categoria_id") @db.Integer
-  categoriaDonacion  CategoriaDonacion @relation(fields: [categoriaId], references: [id], map: "detalles_donacion_categoria_id_fkey")
-  descripcion        String?   @db.Text
-  cantidad           Int?      @db.Integer
-  monto              Decimal?  @db.Decimal(10, 2)
-  talla              String?   @db.VarChar(50)
-  unidadMedida       String?   @db.VarChar(50) @map("unidad_medida")
-  fechaVencimiento   DateTime? @db.Date        @map("fecha_vencimiento")
-  fechaDonacion      DateTime  @default(now()) @map("fecha_donacion") // Cambiado
+  id                 Int                  @id @default(autoincrement())
+  categoriaId        Int                  @map("categoria_id") @db.Integer
+  categoriaDonacion  CategoriaDonacion    @relation(fields: [categoriaId], references: [id], map: "detalles_donacion_categoria_id_fkey")
+  descripcion        String?              @db.Text
+  cantidad           Int?                 @db.Integer
+  monto              Decimal?             @db.Decimal(10, 2)
+  talla              String?              @db.VarChar(50)
+  unidadMedida       String?              @db.VarChar(50) @map("unidad_medida")
+  fechaVencimiento   DateTime?            @db.Date        @map("fecha_vencimiento")
+  fechaDonacion      DateTime             @default(now()) @map("fecha_donacion")
   usuariosDonaciones UsuarioDonacion[]
-  @@map("detalles_donaciones")
+  @@map("det_don")
 }
 
 model UsuarioDonacion {
-  id                 Int            @id @default(autoincrement())
-  usuarioId          Int            @map("usuario_id") @db.Integer
-  usuario            Usuario        @relation(fields: [usuarioId], references: [id], map: "usuarios_donaciones_usuario_id_fkey")
-  detalleDonacionId  Int            @map("detalle_donacion_id") @db.Integer
-  detallesDonacion   DetallesDonacion @relation(fields: [detalleDonacionId], references: [id], map: "usuarios_donaciones_detalle_donacion_id_fkey")
-  fechaRegistro      DateTime       @default(now()) @map("fecha_registro") // Cambiado
+  id                 Int                  @id @default(autoincrement())
+  usuarioId          Int                  @map("usuario_id") @db.Integer
+  usuario            Usuario              @relation(fields: [usuarioId], references: [id], map: "usuarios_donaciones_usuario_id_fkey")
+  detalleDonacionId  Int                  @map("detalle_donacion_id") @db.Integer
+  detallesDonacion   DetallesDonacion     @relation(fields: [detalleDonacionId], references: [id], map: "usuarios_donaciones_detalle_donacion_id_fkey")
+  fechaRegistro      DateTime             @default(now()) @map("fecha_registro")
   @@unique([usuarioId, detalleDonacionId])
-  @@map("usuarios_donaciones")
+  @@map("usr_don")
+}
+
+model LugarDonacion {
+  id                      Int                       @id @default(autoincrement())
+  nombreInstitucion       String                    @db.VarChar(255) @map("nombre_institucion")
+  direccion               String                    @db.VarChar(255)
+  estado                  Boolean                   @default(true)
+  codigoPostal            String?                   @db.VarChar(10) @map("codigo_postal")
+  telefonoContacto        String?                   @db.VarChar(20) @map("telefono_contacto")
+  latitud                 Decimal?                  @db.Decimal(10, 8)
+  longitud                Decimal?                  @db.Decimal(11, 8)
+  horarios                Horario[]
+  donacionesRecibidas     UsuariosLugaresDonacion[] 
+  @@map("lug_don")
+}
+
+model Horario {
+  id              Int    @id @default(autoincrement())
+  lugarDonacionId Int    @map("lugar_donacion_id") @db.Integer
+  lugarDonacion   LugarDonacion @relation(fields: [lugarDonacionId], references: [id])
+  diaSemana       String @db.VarChar(20)
+  horaInicio      String @db.VarChar(5)
+  horaFin         String @db.VarChar(5)
+  @@map("horarios")
+}
+
+model UsuariosLugaresDonacion {
+  id                     Int       @id @default(autoincrement())
+  usuarioId              Int       @map("usuario_id") @db.Integer
+  usuario                Usuario   @relation(fields: [usuarioId], references: [id])
+  lugarDonacionId        Int       @map("lugar_donacion_id") @db.Integer
+  lugarDonacion          LugarDonacion @relation(fields: [lugarDonacionId], references: [id])
+  fechaHoraDonacion      DateTime  @default(now()) @map("fecha_hora_donacion")
+  @@map("u_l_don")
 }
