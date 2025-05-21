@@ -22,8 +22,10 @@ model Usuario {
   contrasenaHash          String                    @db.VarChar(255) @map("contrasena_hash")
   estado                  Boolean                   @default(true)
   fechaRegistro           DateTime                  @default(now()) @map("fecha_registro")
+  provincia               String?                   @db.VarChar(100)
+  localidad               String?                   @db.VarChar(100)
   usuariosDonaciones      UsuarioDonacion[]
-  visitasLugaresDonacion UsuariosLugaresDonacion[] 
+  visitasLugaresDonacion UsuariosLugaresDonacion[]
   @@map("usuarios")
 }
 
@@ -69,8 +71,10 @@ model LugarDonacion {
   telefonoContacto        String?                   @db.VarChar(20) @map("telefono_contacto")
   latitud                 Decimal?                  @db.Decimal(10, 8)
   longitud                Decimal?                  @db.Decimal(11, 8)
+  provincia               String?                   @db.VarChar(100)
+  localidad               String?                   @db.VarChar(100)
   horarios                Horario[]
-  donacionesRecibidas     UsuariosLugaresDonacion[] 
+  donacionesRecibidas     UsuariosLugaresDonacion[]
   @@map("lug_don")
 }
 
