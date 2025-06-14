@@ -12,6 +12,7 @@ import {
   PrismaClientValidationError,
   PrismaClientInitializationError,
 } from '@prisma/client/runtime/library';
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
 const DEFAULT_ERROR_STATUS = HttpStatus.INTERNAL_SERVER_ERROR;
 const DEFAULT_ERROR_MESSAGE = 'Internal Server Error';
@@ -39,7 +40,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
   constructor() {
     this.prismaDefaultErrorConfig = {
-      status: HttpStatus.BAD_REQUEST, 
+      status: HttpStatus.BAD_REQUEST,
       message: (error: PrismaClientKnownRequestError) => `Error en la base de datos: ${error.message}`,
     };
     this.initializePrismaErrorMap();
@@ -47,9 +48,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
   private initializePrismaErrorMap() {
     this.prismaErrorMap = new Map<string, PrismaErrorConfig>();
-
     this.prismaErrorMap.set('P2002', {
-      status: HttpStatus.CONFLICT, 
+      status: HttpStatus.CONFLICT,
       message: (error: PrismaClientKnownRequestError) => {
         const fieldName = (error.meta?.target as string[])?.[0] || 'campo';
         return `Ya existe una categoría de donación con ese ${fieldName}. Por favor, elige un ${fieldName} diferente.`;
@@ -57,7 +57,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     });
 
     this.prismaErrorMap.set('P2025', {
-      status: HttpStatus.NOT_FOUND, 
+      status: HttpStatus.NOT_FOUND,
       message: () => 'Registro no encontrado.',
     });
   }
@@ -72,24 +72,51 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let name: string = UNKNOWN_ERROR_NAME;
     let stack: string | undefined = undefined;
 
+    if (exception instanceof TokenExpiredError) {
+      status = HttpStatus.UNAUTHORIZED;
+      message = 'Token de autenticación expirado.';
+      name = 'TokenExpiredError';
+      stack = exception.stack;
+    } else if (exception instanceof JsonWebTokenError) {
+      status = HttpStatus.UNAUTHORIZED;
+      message = 'Token de autenticación inválido.';
+      name = 'JsonWebTokenError';
+      stack = exception.stack;
+    }
+
     if (exception instanceof PrismaClientInitializationError) {
       status = HttpStatus.SERVICE_UNAVAILABLE;
       message = 'Database connection error';
       name = exception.name;
       stack = exception.stack;
     } else if (exception instanceof PrismaClientKnownRequestError) {
-      const errorConfig = this.prismaErrorMap.get(exception.code) || this.prismaDefaultErrorConfig;
-      status = errorConfig.status;
-      message = errorConfig.message(exception); 
-      name = exception.name;
-      stack = exception.stack;
+      if (exception.code === 'P2002') {
+        const target = exception.meta?.target;
+        if (Array.isArray(target) && target.includes('email')) {
+          status = HttpStatus.CONFLICT;
+          message = 'El usuario con este email ya existe.';
+          name = exception.name;
+          stack = exception.stack;
+        } else {
+          const errorConfig = this.prismaErrorMap.get(exception.code) || this.prismaDefaultErrorConfig;
+          status = errorConfig.status;
+          message = errorConfig.message(exception);
+          name = exception.name;
+          stack = exception.stack;
+        }
+      } else {
+        const errorConfig = this.prismaErrorMap.get(exception.code) || this.prismaDefaultErrorConfig;
+        status = errorConfig.status;
+        message = errorConfig.message(exception);
+        name = exception.name;
+        stack = exception.stack;
+      }
     } else if (exception instanceof PrismaClientValidationError) {
       status = HttpStatus.UNPROCESSABLE_ENTITY;
       message = `Validation error: ${exception.message}`;
       name = exception.name;
       stack = exception.stack;
-    }
-    else if (exception instanceof HttpException) {
+    } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const res = exception.getResponse();
       message = (typeof res === 'object' && res !== null && 'message' in res)
@@ -99,20 +126,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
       this.logger.debug(`[HttpException] Raw response from pipe: ${JSON.stringify(res)}`);
       name = exception.name;
       stack = exception.stack;
-    }
-    else if (exception instanceof Error && exception.message?.toLowerCase().includes('cloudinary')) {
+    } else if (exception instanceof Error && exception.message?.toLowerCase().includes('cloudinary')) {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
       message = `Error al subir archivos a Cloudinary: ${exception.message}`;
       name = exception.name;
       stack = exception.stack;
-    }
-    else if (exception instanceof Error) {
+    } else if (exception instanceof Error) {
       status = DEFAULT_ERROR_STATUS;
       message = exception.message;
       name = exception.name;
       stack = exception.stack;
-    }
-    else {
+    } else {
       message = typeof exception === 'string' ? exception : DEFAULT_ERROR_MESSAGE;
       name = UNKNOWN_ERROR_NAME;
       stack = undefined;

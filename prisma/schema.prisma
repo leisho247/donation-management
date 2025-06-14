@@ -8,24 +8,25 @@ datasource db {
 }
 
 model Usuario {
-  id                      Int                       @id @default(autoincrement())
-  nombre                  String                    @db.VarChar(255)
-  apellido                String?                   @db.VarChar(255) @map("apellido")
-  fechaNacimiento         DateTime?                 @db.Date        @map("fecha_nacimiento")
-  dni                     String?                   @db.VarChar(20)
-  nacionalidad            String?                   @db.VarChar(100)
-  direccion               String?                   @db.VarChar(255)
-  numeroDireccion         String?                   @db.VarChar(10) @map("numero_direccion")
-  celular                 String?                   @db.VarChar(20)
-  codigoPostal            String?                   @db.VarChar(10) @map("codigo_postal")
-  email                   String                    @unique @db.VarChar(255)
-  contrasenaHash          String                    @db.VarChar(255) @map("contrasena_hash")
-  estado                  Boolean                   @default(true)
-  fechaRegistro           DateTime                  @default(now()) @map("fecha_registro")
-  provincia               String?                   @db.VarChar(100)
-  localidad               String?                   @db.VarChar(100)
+  id                      Int                 @id @default(autoincrement())
+  nombre                  String              @db.VarChar(255)
+  apellido                String?             @db.VarChar(255) @map("apellido")
+  fechaNacimiento         DateTime?           @db.Date @map("fecha_nacimiento")
+  dni                     String?             @db.VarChar(20)
+  nacionalidad            String?             @db.VarChar(100)
+  direccion               String?             @db.VarChar(255)
+  numeroDireccion         String?             @db.VarChar(10) @map("numero_direccion")
+  celular                 String?             @db.VarChar(20)
+  codigoPostal            String?             @db.VarChar(10) @map("codigo_postal")
+  email                   String              @unique @db.VarChar(255)
+  contrasenaHash          String              @db.VarChar(255) @map("contrasena_hash")
+  refreshTokenHash        String?             @db.VarChar(255) @map("refresh_token_hash")
+  estado                  Boolean             @default(true)
+  fechaRegistro           DateTime            @default(now()) @map("fecha_registro")
+  provincia               String?             @db.VarChar(100)
+  localidad               String?             @db.VarChar(100)
   usuariosDonaciones      UsuarioDonacion[]
-  visitasLugaresDonacion UsuariosLugaresDonacion[]
+  visitasLugaresDonacion  UsuariosLugaresDonacion[]
   @@map("usuarios")
 }
 
