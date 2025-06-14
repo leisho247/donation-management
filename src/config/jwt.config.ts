@@ -1,11 +1,23 @@
 import { JwtModuleOptions } from '@nestjs/jwt';
 
-export function jwtConfig(): JwtModuleOptions {
+export interface JwtConfig {
+  accessToken: JwtModuleOptions;
+  refreshToken: JwtModuleOptions;
+}
+
+export function jwtConfig(): JwtConfig {
   return {
-    global: true,
-    secret: process.env.JWT_SECRET,
-    signOptions: {
-      expiresIn: '7d',
+    accessToken: {
+      secret: process.env.JWT_ACCESS_SECRET as string | undefined, 
+      signOptions: {
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRATION || '10m', 
+      },
+    },
+    refreshToken: {
+      secret: process.env.JWT_REFRESH_SECRET as string | undefined, 
+      signOptions: {
+        expiresIn: process.env.REFRESH_TOKEN_EXPIRATION || '1d', 
+      },
     },
   };
 }
